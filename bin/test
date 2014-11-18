@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# -*- bash -*-
+#
+#
+set -u -e -o pipefail
+
+files="$(echo -n specs/*.rb | tr ' ' '\n' | sort)"
+if [[ -z "$files" ]]; then
+  colorize yellow "No tests found." 1>&2
+  exit 0
+else
+  bundle exec bacon specs/lib/helpers.rb $files "$@"
+fi
