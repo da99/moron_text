@@ -9,12 +9,12 @@ Takes a string and run it as an app:
 
     Choose One: fav_fruit
 
-    Which is your favorite fruit?
+    "Which is your favorite fruit?"
 
-    o: Apple.
-    o: Orange.
+    o: "apple"
+    o: "orange"
     merge: previous answers.
-    o: Other.
+    o: "Write in:" one_line_text
 
     When selection is none of the below:
 
