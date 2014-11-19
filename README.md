@@ -7,22 +7,48 @@ This is not ready yet.
 
 Takes a string and run it as an app:
 
-    Menu:
+    Choose One: fav_fruit
 
-      Which is your favorite fruit?
+    Which is your favorite fruit?
 
-      1: Apple
-      2: Orange
-      #? merge: previous answers.
-      ?: Other
+    o: Apple.
+    o: Orange.
+    merge: previous answers.
+    o: Other.
 
-    When selection is: 3
+    When selection is none of the below:
 
-      Get text: custom_fruit
+      #
+        Show this to user:
 
-    Tell:
+        Not my favorite.
+      #!
 
-      Cool. I never heard of such fruit.
+    When selection is: first
+
+      #
+        Show this to user:
+
+          I like apples too!
+      #!
+
+    When selection is: Orange
+
+      #
+      Show this to user:
+
+        I hate oranges. Blah!
+      #!
+
+    When selection is: last
+
+      #
+      Get text from user and save as: fav_fruit.
+
+      Show this to user:
+
+        Cool. I never heard of such fruit.
+      #!
 
 ## Installation
 
