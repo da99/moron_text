@@ -7,6 +7,19 @@ This is not ready yet.
 
 Takes a string and run it as an app:
 
+    ON: any wrong answer
+    Show picture: http://www..../failure.jpg
+
+    ON: final right answer
+    Wait and show clock: 5 seconds
+
+      You got it! Wait while I show you your secret
+      admirer.
+
+      Ok... please wait a few seconds:
+
+    Go to: http://www../admirer
+
     MENU: first_guess
     What is your favorite fruit:
     o: apple
@@ -14,7 +27,6 @@ Takes a string and run it as an app:
     x: strawberry
     o: orange
 
-    ON: right answer
     MENU: second_guess
     What is your favorite location:
     o: beach
@@ -22,23 +34,12 @@ Takes a string and run it as an app:
     o: Osaka
     o: Benton
 
-
-    ON: right answer
     MENU: third_guess
     What is your favorite book:
     o: 1
     x: 2
     o: 3
     o: 4
-
-    ON: any wrong answer
-    Show picture: http://www..../failure.jpg
-
-    ON: final right answer
-    You got it! Wait while I show you your secret
-    admirer.
-    Wait and show clock: 5 seconds
-    Go to: http://www../admirer
 
 # Another example:
 
