@@ -20,24 +20,24 @@ Takes a string and run it as an app:
     WAIT AND SHOW CLOCK : 5 secs
     GO TO : http://www../admirer
 
-    MENU : first guess
+    CHOOSE ONE : first guess
     What is your favorite fruit:
     ( ) apple
     ( ) blueberry
-    (x) strawberry
+    (o) strawberry
     ( ) orange
 
-    MENU : second guess
+    CHOOSE ONE : second guess
     What is your favorite location:
     ( ) beach
-    (x) picnic
+    (o) picnic
     ( ) Osaka
     ( ) Benton
 
-    MENU : third guess
+    CHOOSE ONE : third guess
     What is your favorite book:
     ( ) 1
-    (x) 2
+    (o) 2
     ( ) 3
     ( ) 4
 
@@ -51,24 +51,22 @@ Save stuff to the datastore and use it in the code:
     ( ) orange
     ( ) round
     MERGE : previous answers
-    ( ) "Write in:" one_line_text
+    ( ) Write in:
+    ONE_LINE_TEXT .
 
-    WHEN SELECTION IS NONE OF THE BELOW :
-    SHOW THIS TO USER :
+    WHEN SELECTION IS : Write in...
+    SHOW TO USER :
     Not my favorite.
 
-    WHEN SELECTION IS ROUND :
+    WHEN SELECTION IS : round
     CHOOSE ONE : round_type
     ( ) prune
     ( ) raisin
     ( ) grapes
 
-    WHEN SELECTION IS NONE OF THE ABOVE :
-      Enforce choice.
-
     ABOUT : fav_fruit
 
-    WHEN SELECTION IS FIRST :
+    WHEN SELECTION IS : FIRST
     SHOW TO USER :
     I like apples too!
 
@@ -76,7 +74,7 @@ Save stuff to the datastore and use it in the code:
     SHOW TO USER :
     I hate oranges. Blah!
 
-    WHEN SELECTION IS : last
+    WHEN SELECTION IS : LAST
     SHOW TO USER :
     Cool. I never heard of such fruit.
 
