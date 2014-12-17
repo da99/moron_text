@@ -7,9 +7,10 @@ Gem::Specification.new do |spec|
   spec.version       = `cat VERSION`
   spec.authors       = ["da99"]
   spec.email         = ["i-hate-spam-1234567@mailinator.com"]
-  spec.summary       = %q{TODO: Write a short summary. Required.}
+  spec.summary       = %q{A DSL for WWW mini-apps.}
   spec.description   = %q{
-    TODO: Write a longer description. Optional.
+    It won't be useful for you. It is meant to be
+    used with the WWW_App gem.
   }
   spec.homepage      = "https://github.com/da99/moron_text"
   spec.license       = "MIT"
