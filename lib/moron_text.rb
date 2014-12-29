@@ -2,7 +2,7 @@
 class Moron_Text
 
   CMD_WITH_ARG = /\s*(.+)\s+:\s+(.+)/
-  CMD_CLOSED   = /\s*(.+)\s+\.\s*/
+  CMD_NO_ARG   = /\s*(.+)\s+\.\s*/
   UI_ELEMENT   = /\s*([\(\[].[\)\]])\s+(.+)/
 
   class << self
@@ -18,18 +18,25 @@ class Moron_Text
     @str.each_line.inject([]) { |memo, line|
 
       if line =~ CMD_WITH_ARG
-        memo << {:type=>:command, :value=>$1, :arg=>$2}
-      elsif line =~ CMD_CLOSED
+        val       = $1
+        arg       = $2.sub(/(\s+\.\s*\Z)/, '')
+        is_closed = !!($1)
+        memo << {:type=>:command, :value=>val, :arg=>arg, :closed=>is_closed}
+
+      elsif line =~ CMD_NO_ARG
         memo << {:type=>:command, :value=>$1, :closed=>true}
+
       elsif line =~ UI_ELEMENT
         memo << {:type=>:command, :value=>$1, :arg=>$2}
+
       else
         if memo.last && memo.last[:type]==:text
           memo.last[:value] << line
         else
           memo << {:type=>:text, :value=>line}
         end
-      end
+
+      end # === if
 
       memo
 
