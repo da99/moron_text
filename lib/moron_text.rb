@@ -6,6 +6,9 @@ class Moron_Text
   CMD_OPEN     = /\s*(.+)\s+:\s*\Z/
   UI_ELEMENT   = /\s*([\(\[].[\)\]])\s+(.+)/
   TYPO         = Class.new(RuntimeError)
+  MISSING_KEY  = lambda { |hash, key|
+    fail RuntimeError, "Missing key: #{key.inspect}"
+  }
 
   class << self
   end # === class self ===
@@ -114,6 +117,7 @@ class Moron_Text
       end # === if
 
       memo.last[:original] = line
+      memo.last.default_proc = MISSING_KEY
       memo
 
     # === PASS 2
