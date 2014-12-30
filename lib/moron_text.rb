@@ -12,16 +12,20 @@ class Moron_Text
   attr_reader :lines, :stack, :current
 
   def initialize str
-    @str   = str
-    @lines = nil
-    @stack = nil
-    @has_run=false
-    @defs  = {}
+    @str     = str
+    @lines   = nil
+    @stack   = nil
+    @has_run = false
+    @defs    = {}
     @current = nil
   end # === def initialize
 
+  def split
+    current[:arg].split
+  end
+
   def numbers
-    current[:arg].split.map { |u|
+    split.map { |u|
       begin
         Float(u)
       rescue ArguementError
