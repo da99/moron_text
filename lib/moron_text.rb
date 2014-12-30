@@ -3,13 +3,14 @@ class Moron_Text
 
   CMD_WITH_ARG = /\s*(.+)\s+:\s+(.+)/
   CMD_NO_ARG   = /\s*(.+)\s+\.\s*/
+  CMD_OPEN     = /\s*(.+)\s+:\s*\Z/
   UI_ELEMENT   = /\s*([\(\[].[\)\]])\s+(.+)/
   TYPO         = Class.new(RuntimeError)
 
   class << self
   end # === class self ===
 
-  attr_reader :lines, :stack, :current
+  attr_reader :lines, :stack, :defs
 
   def initialize str
     @str     = str
@@ -17,8 +18,23 @@ class Moron_Text
     @stack   = nil
     @has_run = false
     @defs    = {}
-    @current = nil
+    @current_index = nil
+    @next_index    = nil
   end # === def initialize
+
+  def current
+    @lines[@current_index]
+  end
+
+  def text
+    next_ = lines[@next_index]
+    unless next_ && next_[:type] == :text
+      fail Moron_Text::TYPO, "Missing text for line: #{current[:original]}"
+    end
+
+    @next_index += 1
+    next_[:value]
+  end
 
   def split
     current[:arg].split
@@ -29,7 +45,7 @@ class Moron_Text
       begin
         Float(u)
       rescue ArguementError
-        raise(Moron_Text::TYPO, "Numerical typo: #{txt}")
+        raise(Moron_Text::TYPO, "Numerical typo: #{current[:original]}")
       end
     }
   end
@@ -39,8 +55,12 @@ class Moron_Text
 
     parse
     @stack = []
-    lines.each { |o|
-      @current = o
+    @current_index = 0
+    stop_at = lines.size
+
+    while @current_index < stop_at
+      @next_index = @current_index + 1
+      o = current
       case o[:type]
       when :text
         o
@@ -52,7 +72,8 @@ class Moron_Text
       else
         fail "Programmer error: #{o[:type].inspect}"
       end
-    }
+      @current_index += @next_index
+    end
 
     @has_run = true
     @stack
@@ -76,6 +97,9 @@ class Moron_Text
 
       elsif line =~ CMD_NO_ARG
         memo << {:type=>:command, :value=>$1, :closed=>true}
+
+      elsif line =~ CMD_OPEN
+        memo << {:type=>:command, :value=>$1, :closed=>false}
 
       elsif line =~ UI_ELEMENT
         memo << {:type=>:command, :value=>$1, :arg=>$2}

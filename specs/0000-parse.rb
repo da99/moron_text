@@ -24,4 +24,15 @@ describe ":parse" do
     ]
   end
 
+  it "parses the following as a command: CMD :" do
+    o = Moron_Text.new(<<-EOF)
+      CMD :
+        some text
+    EOF
+
+    o.parse.map { |line|
+      line[:type]
+    }.should == [:command, :text]
+  end
+
 end # === describe ":parse"
