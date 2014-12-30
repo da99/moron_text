@@ -7,19 +7,12 @@ describe ":run" do
       SUBTRACT : 100 5 5
     EOF
 
-    o.def 'ADD', lambda { |moron, line|
-      nums = moron.numbers line[:arg]
-      nums.inject(0) { |memo, obj|
-        memo + obj
-      }
+    o.def 'ADD', lambda { |moron|
+      moron.numbers.reduce(:+)
     }
 
-    o.def 'SUBTRACT', lambda { |moron, line|
-      nums = moron.numbers line[:arg]
-      start = nums.shift
-      nums.inject(start) { |memo, obj|
-        memo - obj
-      }
+    o.def 'SUBTRACT', lambda { |moron|
+      moron.numbers.reduce(:-)
     }
 
     o.run

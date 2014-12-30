@@ -9,7 +9,7 @@ class Moron_Text
   class << self
   end # === class self ===
 
-  attr_reader :lines, :stack
+  attr_reader :lines, :stack, :current
 
   def initialize str
     @str   = str
@@ -17,10 +17,11 @@ class Moron_Text
     @stack = nil
     @has_run=false
     @defs  = {}
+    @current = nil
   end # === def initialize
 
-  def numbers txt
-    txt.split.map { |u|
+  def numbers
+    current[:arg].split.map { |u|
       begin
         Float(u)
       rescue ArguementError
@@ -35,13 +36,14 @@ class Moron_Text
     parse
     @stack = []
     lines.each { |o|
+      @current = o
       case o[:type]
       when :text
         o
       when :command
         def_ = @defs[o[:value]]
         fail(Moron_Text::TYPO, o[:original]) unless def_
-        val = def_.call(self, o)
+        val = def_.call(self)
         (@stack << val) if val != :ignore
       else
         fail "Programmer error: #{o[:type].inspect}"
