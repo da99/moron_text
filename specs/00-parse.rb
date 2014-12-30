@@ -11,7 +11,11 @@ describe ":parse" do
       content.
     EOF
 
-    o.parse.should == [
+    o.parse.map { |line| 
+      l = line.dup
+      l.delete :original
+      l
+    }.should == [
       {:type=>:command, :value=>'MENU', :arg=>'My Title', :closed=>false},
       {:type=>:text,    :value=>"This is some text."},
       {:type=>:command, :value=>'MENU2', :arg=>'arg arg', :closed=>true},
