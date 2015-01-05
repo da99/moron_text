@@ -8,7 +8,12 @@ if [[ -f "specs/$@.rb" ]]; then
   files="specs/$@.rb"
   shift
 else
-  files="$(echo -n specs/*.rb | tr ' ' '\n' | sort)"
+  files="$(echo -n specs/*-$@.rb)"
+  if [[ -f "$files" ]]; then
+    shift
+  else
+    files="$(echo -n specs/*.rb | tr ' ' '\n' | sort)"
+  fi
 fi
 
 if [[ -z "$files" ]]; then
