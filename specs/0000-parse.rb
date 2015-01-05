@@ -12,15 +12,13 @@ describe ":parse" do
     EOF
 
     o.parse.map { |line| 
-      l = line.dup
-      l.delete :original
-      l
+      line.values_at(:type, :value, :arg, :is_closed)
     }.should == [
-      {:type=>:command, :value=>'MENU', :arg=>'My Title', :closed=>false},
-      {:type=>:text,    :value=>"This is some text."},
-      {:type=>:command, :value=>'MENU2', :arg=>'arg arg', :closed=>true},
-      {:type=>:command, :value=>'MENU3',  :closed=>true},
-      {:type=>:text,    :value=>"More text\n      content."}
+      [:command, 'MENU',                      'My Title', false],
+      [:text,    "This is some text.",        nil, false],
+      [:command, 'MENU2',                     'arg arg', true],
+      [:command, 'MENU3',                     nil, true],
+      [:text,    "More text\n      content.", nil, false]
     ]
   end
 
