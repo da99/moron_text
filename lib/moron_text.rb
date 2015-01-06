@@ -14,13 +14,34 @@ class Moron_Text
       :command    => lambda { |info, match| info[:type] = :command; info[:value] = match[1] },
       :arg        => lambda { |info, match| info[:arg] = match[2] },
       :closed     => lambda { |info, match| info[:is_closed] = true },
-      :ui_element => lambda { |info, match| info },
+      :ui_element => lambda { |info, match, moron| 
+        case match
+        when '( )', '(o)'
+          if moron.off?(:radio_menu)
+            moron.treat_as_text
+          else
+            fail "Not implemented"
+          end
+
+        when '[ ]', '[x]'
+          if moron.off?(:check_box_menu)
+            moron.treat_as_text
+          else
+            fail "Not implemented"
+          end
+
+        else
+          moron.treat_as_text
+        end
+      },
       :text       => lambda { |info, line, last| 
         if last
           last[:value] << "\n".freeze
           last[:value] << line
+          :ignore
         else
           info[:value] = info[:value].dup
+          info
         end
       }
     }
@@ -69,15 +90,33 @@ class Moron_Text
   attr_reader :lines, :parsed_lines, :stack, :defs
 
   def initialize str
-    @str           = str
-    @lines         = nil
-    @parsed_lines  = nil
-    @stack         = nil
-    @has_run       = false
-    @defs          = {}
-    @current_index = nil
-    @next_index    = nil
+    @str               = str
+    @lines             = nil
+    @parsed_lines      = nil
+    @stack             = nil
+    @has_run           = false
+    @defs              = {}
+    @line_number       = nil
+    @parse_line_number = nil
+    @next_parse_line   = nil
+    @settings          = {}
   end # === def initialize
+
+  def turn_on sym
+    @settings[sym] = true
+  end
+
+  def turn_off sym
+    @settings[sym] = false
+  end
+
+  def on? sym
+    !!@settings[sym]
+  end
+
+  def off? sym
+    !on?[sym]
+  end
 
   def typo msg
     TYPO.new(self, msg)
@@ -88,16 +127,16 @@ class Moron_Text
   end
 
   def current
-    @parsed_lines[@current_index]
+    @parsed_lines[@parse_line_number]
   end
 
   def text
-    next_ = @parsed_lines[@next_index]
+    next_ = @parsed_lines[@next_parse_line]
     unless next_ && next_[:type] == :text
       fail typo("Missing text for line.")
     end
 
-    @next_index += 1
+    @next_parse_line += 1
     next_[:value]
   end
 
@@ -120,12 +159,13 @@ class Moron_Text
 
     parse
 
-    @stack         = []
-    @current_index = 0
-    stop_at        = parsed_lines.size
+    @stack             = []
+    @line_number       = 0
+    @parse_line_number = 0
+    stop_at            = parsed_lines.size
 
-    while @current_index < stop_at
-      @next_index = @current_index + 1
+    while @parse_line_number < stop_at
+      @next_parse_line = @parse_line_number + 1
       o = current
       case o[:type]
       when :text
@@ -138,7 +178,7 @@ class Moron_Text
       else
         fail "Programmer error: #{o[:type].inspect}"
       end
-      @current_index = @next_index
+      @parse_line_number = @next_parse_line
     end
 
     @has_run = true
@@ -149,19 +189,40 @@ class Moron_Text
     @defs[name.split.map(&:upcase).join ' '] = l
   end
 
+  def meta_line type, val
+    {
+      :type        =>type,
+      :value       =>val,
+      :original    =>@lines[@parse_index-1],
+      :line_number =>@parse_index,
+      :is_closed   =>false,
+      :arg         =>nil
+    }
+  end
+
+  def treat_as name, line
+    if @parsed_lines.last[:type] == name
+      o = @parsed_lines.last
+      result = PATTERNS[:on][name].call self, line, o
+    else
+      o = meta_line(name, line)
+      result = PATTERNS[:on][name].call o, line, nil
+    end
+    result
+  end
+
   def parse
     return @parsed_lines if @parsed_lines
 
-    @lines      = @str.strip.split(NEW_LINE_REG_EXP)
-    line_number = 0
-    meta        = lambda { |type, val|
-      {:type=>type, :value=>val, :original=>@lines[line_number-1], :line_number=>line_number, :is_closed=>false, :arg=>nil}
-    }
+    @lines       = @str.strip.split(NEW_LINE_REG_EXP)
+    @parse_index = 0
 
-    @parsed_lines ||= @lines.inject([]) { |memo, line|
-      # === Pass 1: Create an array of commands and text.
+    @parsed_lines = []
 
-      line_number += 1
+    # === Pass 1: Create an array of commands and text.
+    @lines.each { |line|
+
+      @parse_index += 1
       info = nil
 
       PATTERNS.detect { |name, pattern|
@@ -169,35 +230,28 @@ class Moron_Text
           the_match = line.match pattern
           next unless the_match
 
-          info = meta.call(:command, nil)
+          info = meta_line(:command, nil)
           PATTERNS[:keys][name].each { |prop|
             PATTERNS[:on][prop].call(info, the_match)
           }
         else
-          if memo.last[:type] == name
-            PATTERNS[:on][name].call meta, line, memo.last
-          else
-            info = meta.call(name, line)
-            PATTERNS[:on][name].call info, line, nil
-          end
+          info = treat_as name, line
         end
-        memo << info if info
+        @parsed_lines << info if info && info != :ignore
         true
       }
 
-      memo.last.default_proc = MISSING_KEY
-      memo
+      @parsed_lines.last.default_proc = MISSING_KEY
 
-    }.map { |o|
-      # === PASS 2: strip all text
-
-      if o[:type]==:text
-        o[:value] = o[:value].strip
-      end
-
-      o
     }
 
+    # === PASS 2: strip all text
+    @parsed_lines.each_index { |i|
+      o = @parsed_lines[i]
+      o[:value].strip! if o[:type] == :text
+    }
+
+    @parsed_lines
   end # === def parse
 
 end # === class Moron_Text ===
