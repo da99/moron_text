@@ -32,14 +32,13 @@ class Moron_Text
 
   NEW_LINE_REG_EXP = /\r?\n/
   TYPO             = Class.new(RuntimeError) do
-    attr_reader :moron
+
+    attr_reader :moron, :line_number
+
     def initialize moron, text = "Typo"
       super text
       @moron = moron
-    end
-
-    def line_number
-      @moron.line_number
+      @line_number = @moron.line_number
     end
 
     def line_context
