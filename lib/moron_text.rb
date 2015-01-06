@@ -19,6 +19,8 @@ class Moron_Text
         if last
           last[:value] << "\n".freeze
           last[:value] << line
+        else
+          info[:value] = info[:value].dup
         end
       }
     }
@@ -41,12 +43,18 @@ class Moron_Text
       @line_number = @moron.line_number
     end
 
+    def line
+      moron.lines[line_number-1]
+    end
+
     def line_context
       start = line_number - 3 - 1
       stop  = line_number + 3 - 1
       start = 0 if start < 0
+      i = start
       moron.lines.slice(start, stop - start).map { |o|
-        [o[:line_number], o[:original]]
+        i += 1
+        [i, o]
       }
     end
   end # === Class.new
@@ -58,11 +66,12 @@ class Moron_Text
   class << self
   end # === class self ===
 
-  attr_reader :lines, :stack, :defs
+  attr_reader :lines, :parsed_lines, :stack, :defs
 
   def initialize str
     @str           = str
     @lines         = nil
+    @parsed_lines  = nil
     @stack         = nil
     @has_run       = false
     @defs          = {}
@@ -79,11 +88,11 @@ class Moron_Text
   end
 
   def current
-    @lines[@current_index]
+    @parsed_lines[@current_index]
   end
 
   def text
-    next_ = lines[@next_index]
+    next_ = @parsed_lines[@next_index]
     unless next_ && next_[:type] == :text
       fail typo("Missing text for line.")
     end
@@ -110,9 +119,10 @@ class Moron_Text
     return @stack if @has_run
 
     parse
+
     @stack         = []
     @current_index = 0
-    stop_at        = lines.size
+    stop_at        = parsed_lines.size
 
     while @current_index < stop_at
       @next_index = @current_index + 1
@@ -140,15 +150,15 @@ class Moron_Text
   end
 
   def parse
-    return @lines if @lines
+    return @parsed_lines if @parsed_lines
 
-    lines       = @str.strip.split(NEW_LINE_REG_EXP)
+    @lines      = @str.strip.split(NEW_LINE_REG_EXP)
     line_number = 0
     meta        = lambda { |type, val|
-      {:type=>type, :value=>val, :original=>lines[line_number-1], :line_number=>line_number, :is_closed=>false, :arg=>nil}
+      {:type=>type, :value=>val, :original=>@lines[line_number-1], :line_number=>line_number, :is_closed=>false, :arg=>nil}
     }
 
-    @lines ||= lines.inject([]) { |memo, line|
+    @parsed_lines ||= @lines.inject([]) { |memo, line|
       # === Pass 1: Create an array of commands and text.
 
       line_number += 1
