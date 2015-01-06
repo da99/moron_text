@@ -37,6 +37,10 @@ class Moron_Text
       super text
       @moron = moron
     end
+
+    def line_number
+      @moron.line_number
+    end
   end
 
   MISSING_KEY  = lambda { |hash, key|
@@ -59,7 +63,11 @@ class Moron_Text
   end # === def initialize
 
   def typo msg
-    fail TYPO.new(self, msg)
+    TYPO.new(self, msg)
+  end
+
+  def line_number
+    @current_index + 1
   end
 
   def current
@@ -69,7 +77,7 @@ class Moron_Text
   def text
     next_ = lines[@next_index]
     unless next_ && next_[:type] == :text
-      fail Moron_Text::TYPO, "Missing text for line: #{current[:original]}"
+      fail typo("Missing text for line.")
     end
 
     @next_index += 1
@@ -85,7 +93,7 @@ class Moron_Text
       begin
         Float(u)
       rescue ArguementError
-        raise(Moron_Text::TYPO, "Numerical typo: #{current[:original]}")
+        fail typo("Numerical typo.")
       end
     }
   end
@@ -94,9 +102,9 @@ class Moron_Text
     return @stack if @has_run
 
     parse
-    @stack = []
+    @stack         = []
     @current_index = 0
-    stop_at = lines.size
+    stop_at        = lines.size
 
     while @current_index < stop_at
       @next_index = @current_index + 1
@@ -106,13 +114,13 @@ class Moron_Text
         o
       when :command
         def_ = @defs[o[:value]]
-        fail(Moron_Text::TYPO, o[:original]) unless def_
+        fail(typo "Not found: #{o[:value]}") unless def_
         val = def_.call(self)
         (@stack << val) if val != :ignore
       else
         fail "Programmer error: #{o[:type].inspect}"
       end
-      @current_index += @next_index
+      @current_index = @next_index
     end
 
     @has_run = true
@@ -126,10 +134,10 @@ class Moron_Text
   def parse
     return @lines if @lines
 
-    lines       = @str.split(NEW_LINE_REG_EXP)
-    line_number = 0
+    lines       = @str.strip.split(NEW_LINE_REG_EXP)
+    line_number = -1
     meta        = lambda { |type, val|
-      {:type=>type, :value=>val, :original=>lines[line_number], :line_number=>line_number, :is_closed=>false, :arg=>nil}
+      {:type=>type, :value=>val, :original=>lines[line_number], :line_number=>line_number+1, :is_closed=>false, :arg=>nil}
     }
 
     @lines ||= lines.inject([]) { |memo, line|
