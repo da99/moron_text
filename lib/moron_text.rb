@@ -41,7 +41,16 @@ class Moron_Text
     def line_number
       @moron.line_number
     end
-  end
+
+    def line_context
+      start = line_number - 3 - 1
+      stop  = line_number + 3 - 1
+      start = 0 if start < 0
+      moron.lines.slice(start, stop - start).map { |o|
+        [o[:line_number], o[:original]]
+      }
+    end
+  end # === Class.new
 
   MISSING_KEY  = lambda { |hash, key|
     fail RuntimeError, "Missing key: #{key.inspect}"
