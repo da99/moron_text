@@ -67,7 +67,7 @@ class Moron_Text
   end
 
   def line_number
-    @current_index + 1
+    current[:line_number]
   end
 
   def current
@@ -135,9 +135,9 @@ class Moron_Text
     return @lines if @lines
 
     lines       = @str.strip.split(NEW_LINE_REG_EXP)
-    line_number = -1
+    line_number = 0
     meta        = lambda { |type, val|
-      {:type=>type, :value=>val, :original=>lines[line_number], :line_number=>line_number+1, :is_closed=>false, :arg=>nil}
+      {:type=>type, :value=>val, :original=>lines[line_number-1], :line_number=>line_number, :is_closed=>false, :arg=>nil}
     }
 
     @lines ||= lines.inject([]) { |memo, line|
