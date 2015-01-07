@@ -1,57 +1,35 @@
 
 class Moron_Text
 
-
   PATTERNS = {
-    :command__arg__closed => /\A\s*(.+)\s+:\s+(.+)\s+\.\s?\Z/,
-    :command__arg         => /\A\s*(.+)\s+:\s+(.+)\Z/,
-    :command__closed      => /\A\s*(.+)\s+\.\s*\Z/,
-    :command              => /\A\s*(.+)\s+:\s*\Z/,
-    :ui_element           => /\A\s*([\(\[].[\)\]])\s+(.+)\Z/,
-    :text                 => nil,
+    :command__arg__closed => [
+      /\A\s*(.+)\s+:\s+(.+)\s+\.\s?\Z/,
+      :value, :arg, :is_closed
+    ],
 
-    :on => {
-      :command    => lambda { |info, match| info[:type] = :command; info[:value] = match[1] },
-      :arg        => lambda { |info, match| info[:arg] = match[2] },
-      :closed     => lambda { |info, match| info[:is_closed] = true },
-      :ui_element => lambda { |info, match, moron| 
-        case match
-        when '( )', '(o)'
-          if moron.off?(:radio_menu)
-            moron.treat_as_text
-          else
-            fail "Not implemented"
-          end
+    :command__arg         => [
+      /\A\s*(.+)\s+:\s+(.+)\Z/,
+      :value, :arg
+    ],
 
-        when '[ ]', '[x]'
-          if moron.off?(:check_box_menu)
-            moron.treat_as_text
-          else
-            fail "Not implemented"
-          end
+    :command__closed      => [
+      /\A\s*(.+)\s+\.\s*\Z/,
+      :value, :is_closed
+    ],
 
-        else
-          moron.treat_as_text
-        end
-      },
-      :text       => lambda { |info, line, last| 
-        if last
-          last[:value] << "\n".freeze
-          last[:value] << line
-          :ignore
-        else
-          info[:value] = info[:value].dup
-          info
-        end
-      }
-    }
+    :command              => [
+      /\A\s*(.+)\s+:\s*\Z/,
+      :value
+    ],
+
+    :ui_element           => [
+      /\A\s*([\(\[].[\)\]])\s+(.+)\Z/,
+      :allow, [:radio_menu,     '( )', '(o)'],
+      :allow, [:check_box_menu, '[ ]', '[x]'],
+      :value,
+      :grab_all_text
+    ]
   }
-
-  PATTERNS[:keys] = PATTERNS.keys.inject({}) { |memo, key|
-    memo[key] = key.to_s.split('__'.freeze).map(&:to_sym)
-    memo
-  }
-
 
   NEW_LINE_REG_EXP = /\r?\n/
   TYPO             = Class.new(RuntimeError) do
@@ -165,21 +143,38 @@ class Moron_Text
     stop_at            = parsed_lines.size
 
     while @parse_line_number < stop_at
+
       @next_parse_line = @parse_line_number + 1
       o = current
+
       case o[:type]
+
       when :text
         o
+
       when :command
+
+        if o.has_key?(:allow)
+          fail
+        end
+
+        if o.has_key?(:grab_all_text)
+          fail
+        end
+
         def_ = @defs[o[:value]]
         fail(typo "Not found: #{o[:value]}") unless def_
         val = def_.call(self)
         (@stack << val) if val != :ignore
+
       else
         fail "Programmer error: #{o[:type].inspect}"
-      end
+
+      end # case o[:type]
+
       @parse_line_number = @next_parse_line
-    end
+
+    end # while
 
     @has_run = true
     @stack
@@ -223,25 +218,64 @@ class Moron_Text
     @lines.each { |line|
 
       @parse_index += 1
-      info = nil
+      parsed = nil
 
-      PATTERNS.detect { |name, pattern|
-        if pattern
-          the_match = line.match pattern
-          next unless the_match
-
-          info = meta_line(:command, nil)
-          PATTERNS[:keys][name].each { |prop|
-            PATTERNS[:on][prop].call(info, the_match)
+      is_command = PATTERNS.detect { |name, pattern|
+        match = line.match pattern.first
+        next unless match
+        captures = match.captures
+        shift_capture = lambda {
+          fail "Captures already empty: #{name.inspect}" if captures.empty?
+          captures.shift
+        }
+        parsed = meta_line(:command, nil)
+        start = 0
+        step  = start
+        stop  = pattern.size
+        capture_i = 0
+        while step < stop
+          grab_next = lambda {
+            step += 1
+            fail("No more items.") if step >= stop
+            pattern[step]
           }
-        else
-          info = treat_as name, line
-        end
-        @parsed_lines << info if info && info != :ignore
-        true
-      }
 
-      @parsed_lines.last.default_proc = MISSING_KEY
+          val = grab_next.call
+          next if step == start
+
+          case val
+
+          when :value
+            parsed[:value] = shift_capture.call
+
+          when :arg
+            parsed[:arg] = shift_capture.call
+
+          when :is_closed
+            parsed[:is_closed] = true
+
+          when :allow
+            parsed[:allow] = grab_next.call
+
+          when :grab_all_text
+            parsed[:grab_all_text] = true
+            parsed[:arg] = ([parsed[:arg]] +  captures).compact.join ' '.freeze
+
+          else
+            fail "Typo: unknown pattern command: #{val.inspect}"
+
+          end # case val
+        end # while step < stop
+
+        match
+      } # detect if is command?
+
+      if !is_command
+        parsed = meta_line(:text, line)
+      end
+
+      parsed.default_proc = MISSING_KEY
+      @parsed_lines << parsed
 
     }
 
