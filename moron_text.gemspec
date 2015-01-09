@@ -22,8 +22,9 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
+  spec.add_dependency "about_pos"           , ">= 2.0.0"
+
   spec.add_development_dependency "pry"           , "~> 0.9"
-  spec.add_development_dependency "rake"          , "~> 10.3"
   spec.add_development_dependency "bundler"       , "~> 1.5"
   spec.add_development_dependency "bacon"         , "~> 1.0"
   spec.add_development_dependency "Bacon_Colored" , "~> 0.1"

@@ -1,4 +1,6 @@
 
+require "about_pos"
+
 class Moron_Text
 
   PATTERNS = {
@@ -24,8 +26,11 @@ class Moron_Text
 
     :ui_element           => [
       /\A\s*([\(\[].[\)\]])\s+(.+)\Z/,
-      :allow, [:radio_menu,     '( )', '(o)'],
-      :allow, [:check_box_menu, '[ ]', '[x]'],
+      :allow, 
+      [
+        [:on, [:radio_menu],     :value, ['( )', '(o)']],
+        [:on, [:check_box_menu], :value, ['[ ]', '[x]']]
+      ],
       :value,
       :grab_all_text
     ]
@@ -132,6 +137,20 @@ class Moron_Text
     }
   end
 
+  def fulfills? parsed, cond
+    About_Pos.Forward(cond).all? { |v,i,m|
+      args = m.grab
+      case v
+      when :on
+        args.any? { |on_name| on?(on_name) }
+      when :value
+        args.any? { |v| parsed[:value] == v }
+      else
+        fail "Typo: #{v.inspect}"
+      end
+    }
+  end
+
   def run
     return @stack if @has_run
 
@@ -154,12 +173,19 @@ class Moron_Text
 
       when :command
 
-        if o.has_key?(:allow)
-          fail
+        if o.has_key?(:grab_all_text)
+          o[:text] = [
+            (o.has_key?(:text) && o[:text]) || nil, grab_next.call(nil)
+          ].compact.join("\n".freeze)
         end
 
-        if o.has_key?(:grab_all_text)
-          fail
+        if o.has_key?(:allow)
+          case
+          when o[:allow].all? { |c| c.is_a?(Array) }
+            o[:allow].detect { |cond,i,m| fulfills? o, cond }
+          else
+            fulfills? o, o[:allow]
+          end
         end
 
         def_ = @defs[o[:value]]
@@ -259,7 +285,7 @@ class Moron_Text
 
           when :grab_all_text
             parsed[:grab_all_text] = true
-            parsed[:arg] = ([parsed[:arg]] +  captures).compact.join ' '.freeze
+            parsed[:text] = captures.compact.join ' '.freeze
 
           else
             fail "Typo: unknown pattern command: #{val.inspect}"
