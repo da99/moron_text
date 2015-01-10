@@ -37,6 +37,7 @@ class Moron_Text
   }
 
   NEW_LINE_REG_EXP = /\r?\n/
+  NL               = "\n".freeze
   TYPO             = Class.new(RuntimeError) do
 
     attr_reader :moron, :line_number
@@ -61,7 +62,7 @@ class Moron_Text
         [i, o]
       }
     end
-  end # === Class.new
+  end # === Class TYPO
 
   MISSING_KEY  = lambda { |hash, key|
     fail RuntimeError, "Missing key: #{key.inspect}"
@@ -137,7 +138,8 @@ class Moron_Text
     }
   end
 
-  def fulfills? parsed, cond
+  def fulfills? cond
+    parsed = @parsed_lines[@parse_line_number]
     About_Pos.Forward(cond).all? { |v,i,m|
       args = m.grab
       case v
@@ -161,46 +163,42 @@ class Moron_Text
     @parse_line_number = 0
     stop_at            = parsed_lines.size
 
-    while @parse_line_number < stop_at
-
-      @next_parse_line = @parse_line_number + 1
-      o = current
-
-      case o[:type]
+    About_Pos.Forward(@parsed_lines) { |line, i, m|
+      @parse_line_number = i
+      case line[:type]
 
       when :text
-        o
+        line
 
       when :command
-
-        if o.has_key?(:grab_all_text)
-          o[:text] = [
-            (o.has_key?(:text) && o[:text]) || nil, grab_next.call(nil)
-          ].compact.join("\n".freeze)
+        if line.has_key?(:grab_all_text)
+          line[:text] = [
+            (line.has_key?(:text)                    ? line[:text]    : nil),
+            (m.next? && m.next.value[:type] == :text ? m.grab[:value] : nil)
+          ].
+          compact.
+          join(NL)
         end
 
-        if o.has_key?(:allow)
+        if line.has_key?(:allow)
           case
-          when o[:allow].all? { |c| c.is_a?(Array) }
-            o[:allow].detect { |cond,i,m| fulfills? o, cond }
+          when line[:allow].all? { |c| c.is_a?(Array) }
+            line[:allow].detect { |cond,i,m| fulfills? cond }
           else
-            fulfills? o, o[:allow]
+            fulfills? line[:allow]
           end
         end
 
-        def_ = @defs[o[:value]]
-        fail(typo "Not found: #{o[:value]}") unless def_
+        def_ = @defs[line[:value]]
+        fail(typo "Not found: #{line[:value]}") unless def_
         val = def_.call(self)
         (@stack << val) if val != :ignore
 
       else
-        fail "Programmer error: #{o[:type].inspect}"
+        fail "Programmer error: #{line[:type].inspect}"
 
-      end # case o[:type]
-
-      @parse_line_number = @next_parse_line
-
-    end # while
+      end # case line[:type]
+    }
 
     @has_run = true
     @stack
