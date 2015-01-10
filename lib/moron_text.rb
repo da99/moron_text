@@ -81,7 +81,7 @@ class Moron_Text
     @has_run           = false
     @defs              = {}
     @line_number       = nil
-    @parse_line_number = nil
+    @parsed_line_number = nil
     @next_parse_line   = nil
     @settings          = {}
   end # === def initialize
@@ -111,7 +111,7 @@ class Moron_Text
   end
 
   def current
-    @parsed_lines[@parse_line_number]
+    @parsed_lines[@parsed_line_number]
   end
 
   def text
@@ -139,7 +139,7 @@ class Moron_Text
   end
 
   def fulfills? cond
-    parsed = @parsed_lines[@parse_line_number]
+    parsed = current
     About_Pos.Forward(cond).all? { |v,i,m|
       args = m.grab
       case v
@@ -157,14 +157,11 @@ class Moron_Text
     return @stack if @has_run
 
     parse
-
-    @stack             = []
-    @line_number       = 0
-    @parse_line_number = 0
-    stop_at            = parsed_lines.size
+    @stack       = []
+    @line_number = 0
 
     About_Pos.Forward(@parsed_lines) { |line, i, m|
-      @parse_line_number = i
+      @parsed_line_number = i
       case line[:type]
 
       when :text
