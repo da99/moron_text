@@ -254,7 +254,7 @@ class Moron_Text
         step  = start
         stop  = pattern.size
         capture_i = 0
-        while step < stop
+        while step < (stop-1)
           grab_next = lambda {
             step += 1
             fail("No more items.") if step >= stop
@@ -300,13 +300,23 @@ class Moron_Text
 
     }
 
-    # === PASS 2: strip all text
-    @parsed_lines.each_index { |i|
-      o = @parsed_lines[i]
-      o[:value].strip! if o[:type] == :text
+    # === PASS 2: combine text, strip it
+    lines = []
+    About_Pos.Forward(@parsed_lines) { |o, i, m|
+      if o[:type] == :text
+        if m.next?
+          next_ = m.next.value
+          if next_[:type] == :text
+            o[:value] << NL
+            o[:value] << m.grab[:value]
+          end
+        end
+        o[:value].strip! 
+      end
+      lines << o
     }
 
-    @parsed_lines
+    @parsed_lines = lines
   end # === def parse
 
 end # === class Moron_Text ===
