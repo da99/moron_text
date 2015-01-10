@@ -10,8 +10,8 @@ describe :text do
     EOF
 
     sounds = []
-    o.def 'DUCK', lambda { |moron| sounds << moron.text }
-    o.def 'BIRD', lambda { |moron| sounds << moron.text }
+    o.def 'DUCK', lambda { |moron| sounds << moron.grab_text }
+    o.def 'BIRD', lambda { |moron| sounds << moron.grab_text }
     o.run
     sounds.should == %w{ QUACK Whistle }
   end
@@ -27,7 +27,7 @@ describe :text do
     EOF
 
     txt = nil
-    o.def 'DUCK', lambda { |moron| txt = moron.text }
+    o.def 'DUCK', lambda { |moron| txt = moron.grab_text }
     o.run
     txt.should == <<-EOF.strip
        This is one line.

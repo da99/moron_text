@@ -114,13 +114,18 @@ class Moron_Text
     @parsed_lines[@parsed_line_number]
   end
 
-  def text
-    next_ = @parsed_lines[@next_parse_line]
-    unless next_ && next_[:type] == :text
-      fail typo("Missing text for line.")
-    end
+  def grab_text
+    val = text
+    @seq.grab
+    val
+  end
 
-    @next_parse_line += 1
+  def text
+    fail typo("Missing text for line.") unless @seq.next?
+
+    next_ = @seq.next.value
+    fail typo("Missing text for line.")  unless next_[:type] == :text
+
     next_[:value]
   end
 
@@ -162,6 +167,7 @@ class Moron_Text
 
     About_Pos.Forward(@parsed_lines) { |line, i, m|
       @parsed_line_number = i
+      @seq = m
       case line[:type]
 
       when :text
@@ -304,12 +310,9 @@ class Moron_Text
     lines = []
     About_Pos.Forward(@parsed_lines) { |o, i, m|
       if o[:type] == :text
-        if m.next?
-          next_ = m.next.value
-          if next_[:type] == :text
-            o[:value] << NL
-            o[:value] << m.grab[:value]
-          end
+        while m.next? && m.next.value[:type] == :text
+          o[:value] << NL
+          o[:value] << m.grab[:value]
         end
         o[:value].strip! 
       end
