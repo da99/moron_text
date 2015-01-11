@@ -298,7 +298,7 @@ class Moron_Text
       } # detect if is command?
 
       if !is_command
-        parsed = meta_line(:text, line)
+        parsed = meta_line(:text, line.dup)
       end
 
       parsed.default_proc = MISSING_KEY
