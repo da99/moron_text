@@ -47,24 +47,25 @@ describe :typo do
   end # === it returns a TYPO with :line_number
 
   it 'returns a TYPO with :line_context' do
-    o = Moron_Text.new(trim <<-EOF)
+    o = Moron_Text.new(<<-EOF)
       GOOSE :
         Line 2
         Line 3
       DUCK :
         Line 5
     EOF
+    space = '      '
     o.def 'GOOSE', lambda { |moron| "done" }
     o.def 'DUCK', lambda { |moron| fail moron.typo('blah 3') }
 
     lambda { o.run }.
       should.raise(Moron_Text::TYPO).
       line_context.should == [
-        [1, "GOOSE :"],
-        [2, "Line 2"],
-        [3, "Line 3"],
-        [4, "DUCK :"],
-        [5, "Line 5"]
+        [1, "#{space}GOOSE :"],
+        [2, "#{space}  Line 2"],
+        [3, "#{space}  Line 3"],
+        [4, "#{space}DUCK :"],
+        [5, "#{space}  Line 5"]
       ]
   end
 

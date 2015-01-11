@@ -74,16 +74,16 @@ class Moron_Text
   attr_reader :lines, :parsed_lines, :stack, :defs
 
   def initialize str
-    @str               = str
-    @lines             = nil
-    @parsed_lines      = nil
-    @stack             = nil
-    @has_run           = false
-    @defs              = {}
-    @line_number       = nil
+    @str                = str
+    @lines              = nil
+    @parsed_lines       = nil
+    @stack              = nil
+    @has_run            = false
+    @defs               = {}
+    @line_number        = nil
     @parsed_line_number = nil
-    @next_parse_line   = nil
-    @settings          = {}
+    @next_parse_line    = nil
+    @settings           = {}
   end # === def initialize
 
   def turn_on sym
@@ -236,7 +236,7 @@ class Moron_Text
   def parse
     return @parsed_lines if @parsed_lines
 
-    @lines       = @str.strip.split(NEW_LINE_REG_EXP)
+    @lines       = @str.split(NEW_LINE_REG_EXP)
     @parse_index = 0
 
     @parsed_lines = []
