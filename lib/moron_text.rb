@@ -84,6 +84,7 @@ class Moron_Text
     @parsed_line_number = nil
     @next_parse_line    = nil
     @settings           = {}
+    @settings.default_proc = MISSING_KEY
   end # === def initialize
 
   def turn_on sym
@@ -95,11 +96,31 @@ class Moron_Text
   end
 
   def on? sym
-    !!@settings[sym]
+    if !@settings.has_key?(sym)
+      @settings[sym] = false
+    end
+
+    if @settings[sym] !== true && @settings[sym] !== false
+      fail "Invalid type for: #{sym.inspect}: #{settings[sym].inspect}"
+    end
+
+    @settings[sym]
   end
 
   def off? sym
+    if !@settings.has_key?(sym)
+      @settings[sym] = false
+    end
+
     !on?[sym]
+  end
+
+  def []= k, v
+    @settings[k] = v
+  end
+
+  def [] k
+    @settings[k]
   end
 
   def typo msg
