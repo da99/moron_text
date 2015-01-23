@@ -100,7 +100,7 @@ class Moron_Text
       @settings[sym] = false
     end
 
-    if @settings[sym] !== true && @settings[sym] !== false
+    if @settings[sym] != true && @settings[sym] != false
       fail "Invalid type for: #{sym.inspect}: #{settings[sym].inspect}"
     end
 
