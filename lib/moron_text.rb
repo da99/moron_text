@@ -56,6 +56,18 @@ class Moron_Text
       n.split.map(&:upcase).join(SPACE)
     end
 
+    def run *args
+      if block_given?
+        @run_lambda = lambda { |name, line, moron| yield(name, line, moron) }
+      elsif args.size == 3
+        @run_lambda.call(*args)
+      elsif args.size == 1 && args.first.is_a?(Proc)
+        @run_lambda = args.first
+      else
+        fail "Unknown args: #{args.inspect}"
+      end
+    end
+
   end # === class self ===
 
   attr_reader :lines, :parsed_lines, :stack, :defs
@@ -177,7 +189,7 @@ class Moron_Text
     }
   end
 
-  def run
+  def run l = nil
     return @stack if @has_run
 
     parse
@@ -211,7 +223,16 @@ class Moron_Text
           end
         end
 
-        val = yield(line[:value], line, self)
+        args = [line[:value], line, self]
+        val = case
+              when l
+                l.call(*args)
+              when block_given?
+                yield(*args)
+              else
+                self.class.run(*args)
+              end
+
         fail(typo "Not found: #{line[:value]}") if val == :typo
         (@stack << val) if val != :ignore
 
