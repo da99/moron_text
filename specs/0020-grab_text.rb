@@ -1,5 +1,5 @@
 
-describe :text do
+describe :grab_text do
 
   it "pops the following text" do
     o = Moron_Text.new(<<-EOF)

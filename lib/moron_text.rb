@@ -116,6 +116,17 @@ class Moron_Text
     @parsed_lines[@parsed_line_number]
   end
 
+  def grab_prev_text
+    prev_text
+  end
+
+  def prev_text
+    fail typo("Missing previous text for line.") unless @seq.prev?
+    prev = @seq.prev.value
+    fail typo("Missing previous text for line.") unless prev[:type] == :text
+    prev[:value]
+  end
+
   def grab_text
     val = text
     @seq.grab
