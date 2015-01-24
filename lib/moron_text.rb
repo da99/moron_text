@@ -233,7 +233,7 @@ class Moron_Text
                 self.class.run(*args)
               end
 
-        fail(typo "Not found: #{line[:value]}") if val == :typo
+        fail(typo "Typo: #{line[:value]}") if val == :typo
         (@stack << val) if val != :ignore
 
       else
