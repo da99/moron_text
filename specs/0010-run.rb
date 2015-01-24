@@ -1,5 +1,5 @@
 
-describe ":run" do
+describe :run do
 
   it "runs the text as code" do
     o = Moron_Text.new(<<-EOF)
