@@ -6,10 +6,12 @@ describe :typo do
       DUCK /* a
         Quack
     EOF
-    o.def 'DUCK', lambda { |moron| fail moron.typo('blah') }
 
     lambda {
-      o.run
+      o.run do |name, line, moron|
+        fail moron.typo('blah') if name == 'DUCK'
+        :typo
+      end
     }.should.raise(Moron_Text::TYPO).
     message.should.match /blah/
   end
@@ -22,10 +24,19 @@ describe :typo do
       DUCK /*
         Line 5
     EOF
-    o.def 'GOOSE', lambda { |moron| "done" }
-    o.def 'DUCK', lambda { |moron| fail moron.typo('blah 1') }
 
-    lambda { o.run }.
+    lambda {
+      o.run do |name, line, moron|
+        case name
+        when 'GOOSE'
+          "done"
+        when 'DUCK'
+          fail moron.typo('blah 1')
+        else
+          :typo
+        end
+      end
+    }.
       should.raise(Moron_Text::TYPO).
       line.should == 'DUCK /*'
   end
@@ -38,10 +49,19 @@ describe :typo do
       DUCK /*
         Line 5
     EOF
-    o.def 'GOOSE', lambda { |moron| "done" }
-    o.def 'DUCK', lambda { |moron| fail moron.typo('blah 2') }
 
-    lambda { o.run }.
+    lambda {
+      o.run do |name, line, moron|
+        case name
+        when 'GOOSE'
+          "done"
+        when 'DUCK'
+          fail moron.typo('blah 2')
+        else
+          :typo
+        end
+      end
+    }.
       should.raise(Moron_Text::TYPO).
       line_number.should == 4
   end # === it returns a TYPO with :line_number
@@ -55,10 +75,19 @@ describe :typo do
         Line 5
     EOF
     space = '      '
-    o.def 'GOOSE', lambda { |moron| "done" }
-    o.def 'DUCK', lambda { |moron| fail moron.typo('blah 3') }
 
-    lambda { o.run }.
+    lambda {
+      o.run do |name, line, moron|
+        case name
+        when 'GOOSE'
+          "done"
+        when 'DUCK'
+          fail moron.typo('blah 3')
+        else
+          :typo
+        end
+      end
+    }.
       should.raise(Moron_Text::TYPO).
       line_context.should == [
         [1, "#{space}GOOSE /*"],

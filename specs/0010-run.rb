@@ -7,15 +7,17 @@ describe ":run" do
       SUBTRACT /* 100 5 5
     EOF
 
-    o.def 'ADD', lambda { |moron|
-      moron.numbers.reduce(:+)
-    }
+    o.run do |name, line, moron|
+      case name
+      when 'ADD'
+        moron.numbers.reduce(:+)
+      when 'SUBTRACT'
+        moron.numbers.reduce(:-)
+      else
+        :typo
+      end
+    end
 
-    o.def 'SUBTRACT', lambda { |moron|
-      moron.numbers.reduce(:-)
-    }
-
-    o.run
     o.stack.should == [6, 90]
   end
 

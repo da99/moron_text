@@ -3,6 +3,7 @@ require "about_pos"
 
 class Moron_Text
 
+  SPACE = ' '.freeze
   DELIM = "\\s+" + Regexp.escape("/*")
 
   PATTERNS = {
@@ -50,6 +51,11 @@ class Moron_Text
   }
 
   class << self
+
+    def standard_name n
+      n.split.map(&:upcase).join(SPACE)
+    end
+
   end # === class self ===
 
   attr_reader :lines, :parsed_lines, :stack, :defs
@@ -205,9 +211,8 @@ class Moron_Text
           end
         end
 
-        def_ = @defs[line[:value]]
-        fail(typo "Not found: #{line[:value]}") unless def_
-        val = def_.call(self)
+        val = yield(line[:value], line, self)
+        fail(typo "Not found: #{line[:value]}") if val == :typo
         (@stack << val) if val != :ignore
 
       else
@@ -218,10 +223,6 @@ class Moron_Text
 
     @has_run = true
     @stack
-  end
-
-  def def name, l
-    @defs[name.split.map(&:upcase).join ' '] = l
   end
 
   def meta_line type, val
@@ -268,10 +269,11 @@ class Moron_Text
           fail "Captures already empty: #{name.inspect}" if captures.empty?
           captures.shift
         }
-        parsed = meta_line(:command, nil)
-        start = 0
-        step  = start
-        stop  = pattern.size
+
+        parsed    = meta_line(:command, nil)
+        start     = 0
+        step      = start
+        stop      = pattern.size
         capture_i = 0
         while step < (stop-1)
           grab_next = lambda {
@@ -287,7 +289,7 @@ class Moron_Text
 
           when :value
             if parsed[:type] == :command
-              parsed[:value] = shift_capture.call.strip
+              parsed[:value] = Moron_Text.standard_name shift_capture.call
             else
               parsed[:value] = shift_capture.call
             end

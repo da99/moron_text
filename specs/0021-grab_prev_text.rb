@@ -9,8 +9,13 @@ describe :grab_prev_text do
     EOF
 
     sounds = []
-    o.def 'BIRD', lambda { |moron| sounds << moron.grab_prev_text }
-    o.run
+    o.run { |name, line, moron|
+      if name == 'BIRD'
+        sounds << moron.grab_prev_text
+      else
+        :typo
+      end
+    }
     sounds.should == ['This is text.']
   end
 
@@ -24,8 +29,13 @@ describe :grab_prev_text do
     EOF
 
     txt = nil
-    o.def 'DUCK', lambda { |moron| txt = moron.grab_prev_text }
-    o.run
+    o.run { |name, line, moron|
+      if name == 'DUCK'
+        txt = moron.grab_prev_text
+      else
+        :typo
+      end
+    }
     trim(txt).should == trim(<<-EOF)
        This is one line.
 

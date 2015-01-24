@@ -10,9 +10,16 @@ describe :grab_text do
     EOF
 
     sounds = []
-    o.def 'DUCK', lambda { |moron| sounds << moron.grab_text }
-    o.def 'BIRD', lambda { |moron| sounds << moron.grab_text }
-    o.run
+    o.run do |name, line, moron|
+      case name
+      when 'DUCK'
+        sounds << moron.grab_text
+      when 'BIRD'
+        sounds << moron.grab_text
+      else
+        :typo
+      end
+    end
     sounds.should == %w{ QUACK Whistle }
   end
 
@@ -27,8 +34,13 @@ describe :grab_text do
     EOF
 
     txt = nil
-    o.def 'DUCK', lambda { |moron| txt = moron.grab_text }
-    o.run
+    o.run { |name, line, moron|
+      if name == 'DUCK'
+        txt = moron.grab_text 
+      else
+        :typo
+      end
+    }
     txt.should == <<-EOF.strip
        This is one line.
 
