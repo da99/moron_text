@@ -22,6 +22,20 @@ describe ":parse" do
     ]
   end
 
+  it "parses stripped text" do
+    o = Moron_Text.new(trim <<-EOF)
+      CMD /*
+        some text
+    EOF
+
+    o.parse.map { |line|
+      line.values_at(:type, :value)
+    }.should == [
+      [:command, 'CMD'],
+      [:text, 'some text']
+    ]
+  end
+
   it "parses the following as a command: CMD :" do
     o = Moron_Text.new(<<-EOF)
       CMD /*

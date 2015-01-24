@@ -12,7 +12,7 @@ class Moron_Text
     ],
 
     :command              => [
-      /\A\s+(.+)#{DELIM}\s*\Z/,
+      /\A\s*(.+)#{DELIM}\s*\Z/,
       :value
     ]
   }

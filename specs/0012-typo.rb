@@ -25,7 +25,6 @@ describe :typo do
     o.def 'GOOSE', lambda { |moron| "done" }
     o.def 'DUCK', lambda { |moron| fail moron.typo('blah 1') }
 
-    binding.pry
     lambda { o.run }.
       should.raise(Moron_Text::TYPO).
       line.should == 'DUCK /*'
