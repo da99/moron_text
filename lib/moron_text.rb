@@ -58,7 +58,7 @@ class Moron_Text
 
     def run *args
       if block_given?
-        @run_lambda = lambda { |name, line, moron| yield(name, line, moron) }
+        @run_lambda = lambda { |*args| yield(*args) }
       elsif args.size == 3
         @run_lambda.call(*args)
       elsif args.size == 1 && args.first.is_a?(Proc)
