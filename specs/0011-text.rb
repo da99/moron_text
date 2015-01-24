@@ -3,9 +3,9 @@ describe :text do
 
   it "pops the following text" do
     o = Moron_Text.new(<<-EOF)
-      DUCK :
+      DUCK /*
         QUACK
-      BIRD :
+      BIRD /*
         Whistle
     EOF
 
@@ -18,7 +18,7 @@ describe :text do
 
   it "pops multiple lines of text" do
     o = Moron_Text.new(<<-EOF)
-      DUCK :
+      DUCK /*
 
        This is one line.
 

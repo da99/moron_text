@@ -3,36 +3,17 @@ require "about_pos"
 
 class Moron_Text
 
-  PATTERNS = {
-    :command__arg__closed => [
-      /\A\s*(.+)\s+:\s+(.+)\s+\.\s?\Z/,
-      :value, :arg, :is_closed
-    ],
+  DELIM = "\\s+" + Regexp.escape("/*")
 
+  PATTERNS = {
     :command__arg         => [
-      /\A\s*(.+)\s+:\s+(.+)\Z/,
+      %r!\A\s*(.+)#{DELIM}\s+(.+)\Z!,
       :value, :arg
     ],
 
-    :command__closed      => [
-      /\A\s*(.+)\s+\.\s*\Z/,
-      :value, :is_closed
-    ],
-
     :command              => [
-      /\A\s*(.+)\s+:\s*\Z/,
+      /\A\s+(.+)#{DELIM}\s*\Z/,
       :value
-    ],
-
-    :ui_element           => [
-      /\A\s*([\(\[].[\)\]])\s+(.+)\Z/,
-      :allow, 
-      [
-        [:on, [:radio_menu],     :value, ['( )', '(o)']],
-        [:on, [:check_box_menu], :value, ['[ ]', '[x]']]
-      ],
-      :value,
-      :grab_all_text
     ]
   }
 
@@ -294,7 +275,11 @@ class Moron_Text
           case val
 
           when :value
-            parsed[:value] = shift_capture.call
+            if parsed[:type] == :command
+              parsed[:value] = shift_capture.call.strip
+            else
+              parsed[:value] = shift_capture.call
+            end
 
           when :arg
             parsed[:arg] = shift_capture.call

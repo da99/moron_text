@@ -3,7 +3,7 @@ describe :typo do
 
   it "raises a TYPO" do
     o = Moron_Text.new(<<-EOF)
-      DUCK : a
+      DUCK /* a
         Quack
     EOF
     o.def 'DUCK', lambda { |moron| fail moron.typo('blah') }
@@ -16,26 +16,27 @@ describe :typo do
 
   it "returns a TYPO with :line" do
     o = Moron_Text.new(trim <<-EOF)
-      GOOSE :
+      GOOSE /*
         Line 2
         Line 3
-      DUCK :
+      DUCK /*
         Line 5
     EOF
     o.def 'GOOSE', lambda { |moron| "done" }
     o.def 'DUCK', lambda { |moron| fail moron.typo('blah 1') }
 
+    binding.pry
     lambda { o.run }.
       should.raise(Moron_Text::TYPO).
-      line.should == 'DUCK :'
+      line.should == 'DUCK /*'
   end
 
   it "returns a TYPO with :line_number" do
     o = Moron_Text.new(<<-EOF)
-      GOOSE :
+      GOOSE /*
         Line 2
         Line 3
-      DUCK :
+      DUCK /*
         Line 5
     EOF
     o.def 'GOOSE', lambda { |moron| "done" }
@@ -48,10 +49,10 @@ describe :typo do
 
   it 'returns a TYPO with :line_context' do
     o = Moron_Text.new(<<-EOF)
-      GOOSE :
+      GOOSE /*
         Line 2
         Line 3
-      DUCK :
+      DUCK /*
         Line 5
     EOF
     space = '      '
@@ -61,10 +62,10 @@ describe :typo do
     lambda { o.run }.
       should.raise(Moron_Text::TYPO).
       line_context.should == [
-        [1, "#{space}GOOSE :"],
+        [1, "#{space}GOOSE /*"],
         [2, "#{space}  Line 2"],
         [3, "#{space}  Line 3"],
-        [4, "#{space}DUCK :"],
+        [4, "#{space}DUCK /*"],
         [5, "#{space}  Line 5"]
       ]
   end
