@@ -224,14 +224,24 @@ class Moron_Text
         end
 
         args = [line[:value], line, self]
-        val = case
-              when l
-                l.call(*args)
-              when block_given?
-                yield(*args)
-              else
-                self.class.run(*args)
-              end
+        val = nil
+        [:lambda, :block_given?, :class_run].each { |i|
+          case
+          when i == :lambda && l
+            val = l.call(*args)
+            next if val == :next
+            break
+          when i == :block_given? && block_given?
+            val = yield(*args)
+            next if val == :next
+            break
+          when i == :class_run
+            val = self.class.run(*args)
+            next if val == :next
+            break
+          end
+
+        }
 
         fail(typo "Typo: #{line[:value]}") if val == :typo
         (@stack << val) if val != :ignore
