@@ -200,10 +200,6 @@ class Moron_Text
     }
   end
 
-  def ignore
-    throw :moron_flow, :ignore
-  end
-
   def next
     throw :moron_flow, :next
   end
