@@ -39,4 +39,19 @@ describe :next do
     stack.should == [:block, :lambda, :class, :block, :lambda, :class]
   end
 
+  it "fails w/ Typo if :next is called in Class :run" do
+    stack = []
+    c = Class.new(Moron_Text)
+    c.run { |name, line, moron| moron.next if name == 'COMM 8' }
+    o = c.new(<<-EOF)
+      COMM 7 /* 4
+      COMM 8 /* 4
+      COMM 9 /* 4
+    EOF
+    lambda {
+      o.run { |name, line, moron| stack << :block; moron.next }
+    }.should.raise(Moron_Text::TYPO).
+    message.should =~ /Typo. COMM 8/
+  end
+
 end # === describe :next
