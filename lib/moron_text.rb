@@ -57,15 +57,22 @@ class Moron_Text
     end
 
     def run *args
-      if block_given?
+      case
+
+      when block_given?
         @run_lambda = lambda { |*args| yield(*args) }
-      elsif args.size == 3
+
+      when args.size == 3
+        args.last.next unless @run_lambda
         @run_lambda.call(*args)
-      elsif args.size == 1 && args.first.is_a?(Proc)
+
+      when args.size == 1 && args.first.is_a?(Proc)
         @run_lambda = args.first
+
       else
         fail "Unknown args: #{args.inspect}"
-      end
+
+      end # === case
     end
 
   end # === class self ===
@@ -120,6 +127,10 @@ class Moron_Text
 
   def [] k
     @settings[k]
+  end
+
+  def typo!
+    throw :moron_flow, :typo
   end
 
   def typo msg
@@ -189,6 +200,19 @@ class Moron_Text
     }
   end
 
+  def ignore
+    throw :moron_flow, :ignore
+  end
+
+  def next
+    throw :moron_flow, :next
+  end
+
+  def return *args
+    @stack.concat args
+    throw :moron_flow, :ignore
+  end
+
   def run l = nil
     return @stack if @has_run
 
@@ -199,6 +223,7 @@ class Moron_Text
     About_Pos.Forward(@parsed_lines) { |line, i, m|
       @parsed_line_number = i
       @seq = m
+
       case line[:type]
 
       when :text
@@ -223,34 +248,31 @@ class Moron_Text
           end
         end
 
-        args = [line[:value], line, self]
-        val = nil
-        [:lambda, :block_given?, :class_run].each { |i|
-          case
-          when i == :lambda && l
-            val = l.call(*args)
-            next if val == :next
-            break
-          when i == :block_given? && block_given?
-            val = yield(*args)
-            next if val == :next
-            break
-          when i == :class_run
-            val = self.class.run(*args)
-            next if val == :next
-            break
-          end
+        args    = [line[:value], line, self]
+        val     = nil
+        do_next = :next
 
-        }
+        if block_given?
+          do_next = catch(:moron_flow) { val = yield(*args) }
+        end
 
-        fail(typo "Typo: #{line[:value]}") if val == :typo
-        (@stack << val) if val != :ignore
+        if do_next == :next && l
+          do_next = catch(:moron_flow) { val = l.call(*args) }
+        end
+
+        if do_next == :next
+          do_next = catch(:moron_flow) { val = self.class.run(*args) }
+        end
+
+        fail(typo "Typo: #{line[:value]}") if do_next == :typo || do_next == :next
+        (@stack << val) unless do_next == :ignore
 
       else
         fail "Programmer error: #{line[:type].inspect}"
 
       end # case line[:type]
-    }
+
+    } # === About_Pos
 
     @has_run = true
     @stack
@@ -265,17 +287,6 @@ class Moron_Text
       :is_closed   =>false,
       :arg         =>nil
     }
-  end
-
-  def treat_as name, line
-    if @parsed_lines.last[:type] == name
-      o = @parsed_lines.last
-      result = PATTERNS[:on][name].call self, line, o
-    else
-      o = meta_line(name, line)
-      result = PATTERNS[:on][name].call o, line, nil
-    end
-    result
   end
 
   def parse

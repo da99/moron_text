@@ -22,7 +22,7 @@ describe ":run Class" do
     ]
   end
 
-  it "runs given block if instance :run block uses next" do
+  it "runs given block if instance .run block uses .next" do
     stack = []
 
     c = Class.new(Moron_Text)
@@ -37,7 +37,8 @@ describe ":run Class" do
 
     o.run { |name, line, moron|
       stack << "instance"
-      :next
+      moron.next
+      fail "Not reachable"
     }
 
     stack.should == [

@@ -14,7 +14,7 @@ describe :run do
       when 'SUBTRACT'
         moron.numbers.reduce(:-)
       else
-        :typo
+        moron.next
       end
     end
 

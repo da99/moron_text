@@ -10,7 +10,6 @@ describe :typo do
     lambda {
       o.run do |name, line, moron|
         fail moron.typo('blah') if name == 'DUCK'
-        :typo
       end
     }.should.raise(Moron_Text::TYPO).
     message.should.match /blah/
@@ -33,7 +32,7 @@ describe :typo do
         when 'DUCK'
           fail moron.typo('blah 1')
         else
-          :typo
+          moron.typo!
         end
       end
     }.
@@ -58,7 +57,7 @@ describe :typo do
         when 'DUCK'
           fail moron.typo('blah 2')
         else
-          :typo
+          moron.typo!
         end
       end
     }.
@@ -84,7 +83,7 @@ describe :typo do
         when 'DUCK'
           fail moron.typo('blah 3')
         else
-          :typo
+          moron.typo!
         end
       end
     }.
@@ -99,3 +98,5 @@ describe :typo do
   end
 
 end # === describe :typo
+
+

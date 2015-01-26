@@ -17,7 +17,7 @@ describe :grab_text do
       when 'BIRD'
         sounds << moron.grab_text
       else
-        :typo
+        moron.typo!
       end
     end
     sounds.should == %w{ QUACK Whistle }
@@ -36,9 +36,9 @@ describe :grab_text do
     txt = nil
     o.run { |name, line, moron|
       if name == 'DUCK'
-        txt = moron.grab_text 
+        txt = moron.grab_text
       else
-        :typo
+        moron.typo!
       end
     }
     txt.should == <<-EOF.strip

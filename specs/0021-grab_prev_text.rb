@@ -13,7 +13,7 @@ describe :grab_prev_text do
       if name == 'BIRD'
         sounds << moron.grab_prev_text
       else
-        :typo
+        moron.typo!
       end
     }
     sounds.should == ['This is text.']
@@ -33,7 +33,7 @@ describe :grab_prev_text do
       if name == 'DUCK'
         txt = moron.grab_prev_text
       else
-        :typo
+        moron.typo!
       end
     }
     trim(txt).should == trim(<<-EOF)
