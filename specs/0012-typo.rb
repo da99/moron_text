@@ -26,14 +26,7 @@ describe :typo do
 
     lambda {
       o.run do |name, line, moron|
-        case name
-        when 'GOOSE'
-          "done"
-        when 'DUCK'
-          fail moron.typo('blah 1')
-        else
-          moron.typo!
-        end
+        fail moron.typo('blah 1') if name == 'DUCK'
       end
     }.
       should.raise(Moron_Text::TYPO).
@@ -51,14 +44,7 @@ describe :typo do
 
     lambda {
       o.run do |name, line, moron|
-        case name
-        when 'GOOSE'
-          "done"
-        when 'DUCK'
-          fail moron.typo('blah 2')
-        else
-          moron.typo!
-        end
+        fail moron.typo('blah 2') if name == 'DUCK'
       end
     }.
       should.raise(Moron_Text::TYPO).
@@ -77,14 +63,7 @@ describe :typo do
 
     lambda {
       o.run do |name, line, moron|
-        case name
-        when 'GOOSE'
-          "done"
-        when 'DUCK'
-          fail moron.typo('blah 3')
-        else
-          moron.typo!
-        end
+        fail moron.typo('blah 3') if name == 'DUCK'
       end
     }.
       should.raise(Moron_Text::TYPO).

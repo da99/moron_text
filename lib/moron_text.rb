@@ -222,10 +222,7 @@ class Moron_Text
 
       case line[:type]
 
-      when :text
-        line
-
-      when :command
+      when :command, :text
         if line.has_key?(:grab_all_text)
           line[:text] = [
             (line.has_key?(:text)                    ? line[:text]    : nil),
@@ -244,7 +241,7 @@ class Moron_Text
           end
         end
 
-        args    = [line[:value], line, self]
+        args    = [(line[:type] == :text ? :text : line[:value]), line, self]
         val     = nil
         do_next = :next
 
