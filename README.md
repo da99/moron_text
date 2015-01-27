@@ -30,6 +30,7 @@ This is not ready yet.
     when 'CORRECT'
     when 'WRONG'
     when 'ON'
+    when :text
     else
       text.next
     end
