@@ -10,11 +10,7 @@ describe :grab_prev_text do
 
     sounds = []
     o.run { |name, line, moron|
-      if name == 'BIRD'
-        sounds << moron.grab_prev_text
-      else
-        moron.typo!
-      end
+      sounds << moron.grab_prev_text if name == 'BIRD'
     }
     sounds.should == ['This is text.']
   end
@@ -30,11 +26,7 @@ describe :grab_prev_text do
 
     txt = nil
     o.run { |name, line, moron|
-      if name == 'DUCK'
-        txt = moron.grab_prev_text
-      else
-        moron.typo!
-      end
+      (txt = moron.grab_prev_text) if name == 'DUCK'
     }
     trim(txt).should == trim(<<-EOF)
        This is one line.
